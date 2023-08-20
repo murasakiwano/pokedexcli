@@ -1,8 +1,12 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
-func commandExit(conf config) error {
+func commandExit(_ *config) error {
+	fmt.Println("Exiting program...")
 	os.Exit(0)
 	return nil
 }
