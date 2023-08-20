@@ -3,12 +3,15 @@ package pokeapi
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
+const (
+	baseUrl = "https://pokeapi.co/api/v2"
+)
+
 type PokeApiLocationResponse struct {
-	Next     string  `json:"next"`
+	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
@@ -17,23 +20,44 @@ type PokeApiLocationResponse struct {
 	Count int `json:"count"`
 }
 
-func GetLocations(endpoint string) (PokeApiLocationResponse, error) {
-	res, err := http.Get(endpoint)
+func (c *Client) ListLocations(pageURL *string) (PokeApiLocationResponse, error) {
+	url := baseUrl + "/location-area"
+	if pageURL != nil {
+		url = *pageURL
+	}
+
+	if val, ok := c.cache.Get(url); ok {
+		locationsResp := PokeApiLocationResponse{}
+		err := json.Unmarshal(val, &locationsResp)
+		if err != nil {
+			return PokeApiLocationResponse{}, err
+		}
+
+		return locationsResp, nil
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return PokeApiLocationResponse{}, err
 	}
-	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
 
-	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return PokeApiLocationResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	dat, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return PokeApiLocationResponse{}, err
 	}
 
-	data := PokeApiLocationResponse{}
-	json.Unmarshal(body, &data)
+	locationsResp := PokeApiLocationResponse{}
+	err = json.Unmarshal(dat, &locationsResp)
+	if err != nil {
+		return PokeApiLocationResponse{}, err
+	}
 
-	return data, nil
+	c.cache.Add(url, dat)
+	return locationsResp, nil
 }

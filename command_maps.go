@@ -3,45 +3,38 @@ package main
 import (
 	"errors"
 	"fmt"
-
-	"github.com/murasakiwano/pokedexcli/internal/pokeapi"
 )
 
-func commandMap(conf *config) error {
-	locations, err := fetchAndDisplayLocations(conf.nextLocationsUrl)
+func commandMap(cfg *config) error {
+	locations, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsUrl)
 	if err != nil {
 		return err
 	}
 
-	conf.SetConfig(locations.Next, locations.Previous)
-
-	return nil
-}
-
-func commandMapB(conf *config) error {
-	if conf.previousLocationsUrl == nil {
-		return errors.New("can not go back from first page")
-	}
-
-	locations, err := fetchAndDisplayLocations(*conf.previousLocationsUrl)
-	if err != nil {
-		return err
-	}
-
-	conf.SetConfig(locations.Next, locations.Previous)
-
-	return nil
-}
-
-func fetchAndDisplayLocations(endpoint string) (pokeapi.PokeApiLocationResponse, error) {
-	locations, err := pokeapi.GetLocations(endpoint)
-	if err != nil {
-		return locations, err
-	}
+	cfg.nextLocationsUrl = locations.Next
+	cfg.previousLocationsUrl = locations.Previous
 
 	for _, location := range locations.Results {
 		fmt.Println(location.Name)
 	}
+	return nil
+}
 
-	return locations, nil
+func commandMapB(cfg *config) error {
+	if cfg.previousLocationsUrl == nil {
+		return errors.New("can not go back from first page")
+	}
+
+	locations, err := cfg.pokeapiClient.ListLocations(cfg.previousLocationsUrl)
+	if err != nil {
+		return err
+	}
+
+	cfg.nextLocationsUrl = locations.Next
+	cfg.previousLocationsUrl = locations.Previous
+
+	for _, location := range locations.Results {
+		fmt.Println(location.Name)
+	}
+	return nil
 }

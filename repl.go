@@ -7,12 +7,10 @@ import (
 	"strings"
 )
 
-func runRepl() {
+func runRepl(cfg *config) {
 	var w string
 	scanner := bufio.NewScanner(strings.NewReader(w))
-
 	commandMap := getCommands()
-	conf := NewConfig()
 
 	for {
 		fmt.Print("Pokedex ❯ ")
@@ -21,7 +19,7 @@ func runRepl() {
 
 		command, ok := commandMap[w]
 		if ok {
-			err := command.action(&conf)
+			err := command.action(cfg)
 			if err != nil {
 				log.Printf("ERROR: %v\n", err)
 			}
