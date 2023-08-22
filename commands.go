@@ -1,13 +1,23 @@
 package main
 
 type cliCommand struct {
-	action      func(*config) error
+	action      func(*config, []string) error
 	name        string
 	description string
 }
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			action:      commandExit,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Displays the names of the pokemons in a given area",
+			action:      commandExplore,
+		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
@@ -22,11 +32,6 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Displays the names of the previous 20 location areas",
 			action:      commandMapB,
-		},
-		"exit": {
-			name:        "exit",
-			description: "Exit the Pokedex",
-			action:      commandExit,
 		},
 	}
 }

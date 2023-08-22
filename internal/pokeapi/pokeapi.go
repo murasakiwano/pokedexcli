@@ -1,24 +1,8 @@
 package pokeapi
 
-import (
-	"encoding/json"
-	"io"
-	"net/http"
-)
-
 const (
 	baseUrl = "https://pokeapi.co/api/v2"
 )
-
-type PokeApiLocationResponse struct {
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-	Count int `json:"count"`
-}
 
 func (c *Client) ListLocations(pageURL *string) (PokeApiLocationResponse, error) {
 	url := baseUrl + "/location-area"
@@ -26,38 +10,21 @@ func (c *Client) ListLocations(pageURL *string) (PokeApiLocationResponse, error)
 		url = *pageURL
 	}
 
-	if val, ok := c.cache.Get(url); ok {
-		locationsResp := PokeApiLocationResponse{}
-		err := json.Unmarshal(val, &locationsResp)
-		if err != nil {
-			return PokeApiLocationResponse{}, err
-		}
-
-		return locationsResp, nil
-	}
-
-	req, err := http.NewRequest("GET", url, nil)
+	locationData, err := fetchData[PokeApiLocationResponse](url, c)
 	if err != nil {
 		return PokeApiLocationResponse{}, err
 	}
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return PokeApiLocationResponse{}, err
-	}
-	defer resp.Body.Close()
+	return locationData, nil
+}
 
-	dat, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return PokeApiLocationResponse{}, err
-	}
+func (c *Client) ExploreLocation(location string) (PokeApiExploreLocationData, error) {
+	url := baseUrl + "/location-area/" + location
 
-	locationsResp := PokeApiLocationResponse{}
-	err = json.Unmarshal(dat, &locationsResp)
+	exploreData, err := fetchData[PokeApiExploreLocationData](url, c)
 	if err != nil {
-		return PokeApiLocationResponse{}, err
+		return PokeApiExploreLocationData{}, err
 	}
 
-	c.cache.Add(url, dat)
-	return locationsResp, nil
+	return exploreData, nil
 }
