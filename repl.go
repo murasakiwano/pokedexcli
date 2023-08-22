@@ -18,6 +18,10 @@ func runRepl(cfg *config) {
 
 		params := extractParams(scanner.Text())
 
+		if len(params) == 0 {
+			continue
+		}
+
 		command, ok := commands[params[0]]
 		if ok {
 			err := command.action(cfg, params)
