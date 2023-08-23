@@ -7,7 +7,7 @@ import (
 )
 
 type pokeApiResponse interface {
-	PokeApiExploreLocationData | PokeApiLocationResponse
+	PokeApiLocationArea | PokeApiLocationsResponse | Pokemon
 }
 
 type response[T pokeApiResponse] struct {

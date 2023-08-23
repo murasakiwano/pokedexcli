@@ -4,27 +4,38 @@ const (
 	baseUrl = "https://pokeapi.co/api/v2"
 )
 
-func (c *Client) ListLocations(pageURL *string) (PokeApiLocationResponse, error) {
+func (c *Client) ListLocations(pageURL *string) (PokeApiLocationsResponse, error) {
 	url := baseUrl + "/location-area"
 	if pageURL != nil {
 		url = *pageURL
 	}
 
-	locationData, err := fetchData[PokeApiLocationResponse](url, c)
+	locationData, err := fetchData[PokeApiLocationsResponse](url, c)
 	if err != nil {
-		return PokeApiLocationResponse{}, err
+		return PokeApiLocationsResponse{}, err
 	}
 
 	return locationData, nil
 }
 
-func (c *Client) ExploreLocation(location string) (PokeApiExploreLocationData, error) {
+func (c *Client) ExploreLocation(location string) (PokeApiLocationArea, error) {
 	url := baseUrl + "/location-area/" + location
 
-	exploreData, err := fetchData[PokeApiExploreLocationData](url, c)
+	exploreData, err := fetchData[PokeApiLocationArea](url, c)
 	if err != nil {
-		return PokeApiExploreLocationData{}, err
+		return PokeApiLocationArea{}, err
 	}
 
 	return exploreData, nil
+}
+
+func (c *Client) FetchPokemon(pokename string) (Pokemon, error) {
+	url := baseUrl + "/pokemon/" + pokename
+
+	pokemonData, err := fetchData[Pokemon](url, c)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	return pokemonData, nil
 }
